@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SingleController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,3 +23,5 @@ Route::post('/single/{post}/comment', [SingleController::class,'comment'])
     ->name('single.comment');
 
 
+
+Auth::routes();
