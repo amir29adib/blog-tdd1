@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Admin\PostRequest;
 use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class PostController extends Controller
         return view('admin.post.create' , compact('tags'));
     }
 
-    public function store(Request $request)
+    public function store(PostRequest $request)
     {
         // request data (user_id, title, description, image, tags)
         $post = auth()->user()->posts()->create([
@@ -61,7 +62,7 @@ class PostController extends Controller
      * @param  \App\Models\Post  $post
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
-    public function update(Request $request, Post $post)
+    public function update(PostRequest $request, Post $post)
     {
         // request data (title, description, image, tags)
         $post->update([
