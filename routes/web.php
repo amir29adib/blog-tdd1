@@ -23,7 +23,7 @@ Route::post('/single/{post}/comment', [SingleController::class,'comment'])
     ->middleware('auth:web')
     ->name('single.comment');
 
-Route::prefix('admin')->group(function(){
+Route::prefix('admin')->middleware('admin')->group(function(){
     Route::resource('post', PostController::class)->except(['show']);
 });
 
