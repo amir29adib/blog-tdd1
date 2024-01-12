@@ -106,4 +106,38 @@ class PostControllerTest extends TestCase
         );
     }
 
+    public function testUpdateMethod()
+    {
+        $user = User::factory()->admin()->create();
+        $data = Post::factory()->state(['user_id' => $user->id])->make()->toArray();
+        $post = Post::factory()
+            ->state(['user_id' => $user->id])
+            ->hasTags(rand(1, 5))
+            ->create();
+        $tags = Tag::factory()->count(rand(1,5))->create();
+
+        $this
+            ->actingAs($user)
+            ->patch(
+                route('post.update', $post->id),
+                array_merge(
+                    ['tags' => $tags->pluck('id')->toArray()],
+                    $data
+                )
+            )
+            ->assertSessionHas('message', 'the post has been updated')
+            ->assertRedirect(route('post.index'));
+
+        $this->assertDatabaseHas('posts', array_merge(['id' => $post->id] , $data));
+        $this->assertEquals(
+            $tags->pluck('id')->toArray(),
+            Post::where($data)->first()->tags()->pluck('id')->toArray()
+        );
+
+        $this->assertEquals(
+            $this->middlewares,
+            request()->route()->middleware()
+        );
+    }
+
 }
