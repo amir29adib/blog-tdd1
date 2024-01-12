@@ -12,7 +12,7 @@ use Tests\TestCase;
 class PostControllerTest extends TestCase
 {
     use RefreshDatabase;
-
+    protected $middlewares = ['web', 'admin'];
     /**
      * A basic feature test example.
      *
@@ -31,7 +31,7 @@ class PostControllerTest extends TestCase
             ->assertViewHas('posts', Post::latest()->paginate(15));
 
         $this->assertEquals(
-            ['web', 'admin'],
+            $this->middlewares,
             request()->route()->middleware()
         );
     }
@@ -49,7 +49,7 @@ class PostControllerTest extends TestCase
             ->assertViewHas('tags', Tag::latest()->get());
 
         $this->assertEquals(
-            ['web', 'admin'],
+            $this->middlewares,
             request()->route()->middleware()
         );
     }
@@ -71,7 +71,37 @@ class PostControllerTest extends TestCase
             ]);
 
         $this->assertEquals(
-            ['web', 'admin'],
+            $this->middlewares,
+            request()->route()->middleware()
+        );
+    }
+
+    public function testStoreMethod()
+    {
+        $user = User::factory()->admin()->create();
+        $data = Post::factory()->state(['user_id' => $user->id])->make()->toArray();
+        $tags = Tag::factory()->count(rand(1,5))->create();
+
+        $this
+            ->actingAs($user)
+            ->post(
+                route('post.store'),
+                array_merge(
+                    ['tags' => $tags->pluck('id')->toArray()],
+                    $data
+                )
+            )
+            ->assertSessionHas('message', 'new post has been created')
+            ->assertRedirect(route('post.index'));
+
+        $this->assertDatabaseHas('posts', $data);
+        $this->assertEquals(
+            $tags->pluck('id')->toArray(),
+            Post::where($data)->first()->tags()->pluck('id')->toArray()
+        );
+
+        $this->assertEquals(
+            $this->middlewares,
             request()->route()->middleware()
         );
     }
